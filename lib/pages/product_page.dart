@@ -1,17 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:productosapp/providers/providers.dart';
+import 'package:productosapp/services/services.dart';
 import 'package:productosapp/ui/input_decorations.dart';
 import 'package:productosapp/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
 class ProductPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final productsService = Provider.of<ProductsService>(context);
+    return ChangeNotifierProvider(
+      create: (_) => ProductFormProvider(productsService.selectedProduct),
+      child: _ProductPageBody(productsService: productsService),
+    );
+  }
+}
+
+class _ProductPageBody extends StatelessWidget {
+  const _ProductPageBody({
+    Key? key,
+    required this.productsService,
+  }) : super(key: key);
+
+  final ProductsService productsService;
+
+  @override
+  Widget build(BuildContext context) {
+    final productForm = Provider.of<ProductFormProvider>(context);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           children: [
             Stack(
               children: [
-                ProductImage(),
+                ProductImage(
+                  picture: productsService.selectedProduct.picture,
+                ),
                 Positioned(
                     top: 50,
                     left: 10,
@@ -43,7 +68,11 @@ class ProductPage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.save_outlined),
-        onPressed: () {},
+        onPressed: () async {
+          if (!productForm.isValidForm()) return;
+          await productsService.saveOrCreateProduct(productForm.product);
+          Navigator.pop(context);
+        },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
@@ -53,6 +82,8 @@ class ProductPage extends StatelessWidget {
 class _ProductForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final productForm = Provider.of<ProductFormProvider>(context);
+    final product = productForm.product;
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: 10,
@@ -62,12 +93,20 @@ class _ProductForm extends StatelessWidget {
         width: double.infinity,
         decoration: _buildBoxDecoration(),
         child: Form(
+          key: productForm.formKey,
+          autovalidateMode: AutovalidateMode.onUserInteraction,
           child: Column(
             children: [
               SizedBox(
                 height: 10,
               ),
               TextFormField(
+                initialValue: product.name,
+                onChanged: (value) => product.name = value,
+                validator: (value) {
+                  if (value == null || value.length < 1)
+                    return 'El nombre es obligatorio';
+                },
                 decoration: InputDecorations.authInputDecoration(
                     hintText: 'Nombre del producto', labelText: 'Nombre'),
               ),
@@ -75,6 +114,17 @@ class _ProductForm extends StatelessWidget {
                 height: 20,
               ),
               TextFormField(
+                initialValue: product.price.toString(),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(
+                      RegExp(r'^(\d+)?\.?\d{0,2}'))
+                ],
+                onChanged: (value) => {
+                  if (double.tryParse(value) == null)
+                    product.price = 0
+                  else
+                    product.price = double.parse(value)
+                },
                 keyboardType: TextInputType.number,
                 decoration: InputDecorations.authInputDecoration(
                     hintText: '\$150.00', labelText: 'Precio'),
@@ -83,10 +133,10 @@ class _ProductForm extends StatelessWidget {
                 height: 20,
               ),
               SwitchListTile(
-                  value: true,
-                  title: Text('Disponible'),
+                  value: product.available,
+                  title: Text('Disponibilidad'),
                   activeColor: Colors.indigo,
-                  onChanged: (value) {}),
+                  onChanged: productForm.updateAvailability),
               SizedBox(
                 height: 20,
               ),

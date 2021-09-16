@@ -1,6 +1,11 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:productosapp/models/models.dart';
 
 class ProductCard extends StatelessWidget {
+  final Product product;
+
+  const ProductCard({Key? key, required this.product}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -13,10 +18,18 @@ class ProductCard extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomLeft,
           children: [
-            _BackgroungImage(),
-            _ProductDetails(),
-            Positioned(top: 0, right: 0, child: _PriceTag()),
-            Positioned(top: 0, left: 0, child: _NotAvaliable())
+            _BackgroungImage('${product.picture}'),
+            _ProductDetails(
+              product,
+            ),
+            Positioned(
+                top: 0,
+                right: 0,
+                child: _PriceTag(
+                  product.price,
+                )),
+            if (!product.available)
+              Positioned(top: 0, left: 0, child: _NotAvaliable()),
           ],
         ),
       ),
@@ -57,6 +70,9 @@ class _NotAvaliable extends StatelessWidget {
 }
 
 class _PriceTag extends StatelessWidget {
+  final double precio;
+
+  const _PriceTag(this.precio);
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -68,7 +84,7 @@ class _PriceTag extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
           child: Text(
-            '\$ 103.99',
+            '\$ ${this.precio}',
             style: TextStyle(color: Colors.white, fontSize: 18),
           ),
         ),
@@ -82,6 +98,8 @@ class _PriceTag extends StatelessWidget {
 }
 
 class _BackgroungImage extends StatelessWidget {
+  final String? picture;
+  const _BackgroungImage(this.picture);
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
@@ -89,17 +107,25 @@ class _BackgroungImage extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 350,
-        child: FadeInImage(
-          placeholder: AssetImage('assets/jar-loading.gif'),
-          image: NetworkImage('https://via.placeholder.com/400x300/f6f6f6'),
-          fit: BoxFit.cover,
-        ),
+        child: picture == 'null'
+            ? Image(
+                image: AssetImage('assets/no-image.png'),
+                fit: BoxFit.cover,
+              )
+            : FadeInImage(
+                placeholder: AssetImage('assets/jar-loading.gif'),
+                image: NetworkImage(picture!),
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
 }
 
 class _ProductDetails extends StatelessWidget {
+  final Product product;
+
+  const _ProductDetails(this.product);
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -113,7 +139,7 @@ class _ProductDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Disco duro G',
+              product.name,
               style: TextStyle(
                   fontSize: 18,
                   color: Colors.white,
@@ -122,7 +148,7 @@ class _ProductDetails extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              'Id Disco duro',
+              product.id!,
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.white,
