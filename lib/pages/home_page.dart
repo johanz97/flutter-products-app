@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:productosapp/models/models.dart';
 import 'package:productosapp/pages/page.dart';
 import 'package:provider/provider.dart';
 import 'package:productosapp/services/services.dart';
@@ -28,7 +29,11 @@ class HomePage extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () {},
+        onPressed: () {
+          productsService.selectedProduct =
+              new Product(name: '', available: false, price: 0);
+          Navigator.pushNamed(context, 'product');
+        },
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:productosapp/providers/providers.dart';
 import 'package:productosapp/services/services.dart';
 import 'package:productosapp/ui/input_decorations.dart';
@@ -55,7 +56,15 @@ class _ProductPageBody extends StatelessWidget {
                         Icons.camera_alt_rounded,
                         color: Colors.white,
                       ),
-                      onPressed: () => {},
+                      onPressed: () async {
+                        final picker = new ImagePicker();
+                        final XFile? xFile = await picker.pickImage(
+                            source: ImageSource.camera, imageQuality: 100);
+                        if (xFile == null) {
+                          return;
+                        }
+                        productsService.updateSelectedProductImage(xFile.path);
+                      },
                     ))
               ],
             ),
@@ -67,12 +76,20 @@ class _ProductPageBody extends StatelessWidget {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.save_outlined),
-        onPressed: () async {
-          if (!productForm.isValidForm()) return;
-          await productsService.saveOrCreateProduct(productForm.product);
-          Navigator.pop(context);
-        },
+        child: productsService.isSaving
+            ? CircularProgressIndicator(
+                color: Colors.white,
+              )
+            : Icon(Icons.save_outlined),
+        onPressed: productsService.isSaving
+            ? null
+            : () async {
+                if (!productForm.isValidForm()) return;
+                final String? imageUrl = await productsService.uploadImage();
+                if (imageUrl != null) productForm.product.picture = imageUrl;
+                await productsService.saveOrCreateProduct(productForm.product);
+                Navigator.pop(context);
+              },
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
