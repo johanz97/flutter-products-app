@@ -5,7 +5,7 @@ import 'package:productosapp/ui/input_decorations.dart';
 import 'package:productosapp/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +23,7 @@ class LoginPage extends StatelessWidget {
                       height: 10,
                     ),
                     Text(
-                      'Login',
+                      'Crear cuenta',
                       style: Theme.of(context).textTheme.headline5,
                     ),
                     SizedBox(
@@ -41,13 +41,13 @@ class LoginPage extends StatelessWidget {
               ),
               TextButton(
                 onPressed: () =>
-                    Navigator.pushReplacementNamed(context, 'register'),
+                    Navigator.pushReplacementNamed(context, 'login'),
                 style: ButtonStyle(
                     overlayColor: MaterialStateProperty.all(
                         Colors.indigo.withOpacity(0.1)),
                     shape: MaterialStateProperty.all(StadiumBorder())),
                 child: Text(
-                  'Crear nueva cuenta',
+                  '¿Ya tienes cuenta?',
                   style: TextStyle(fontSize: 16, color: Colors.black87),
                 ),
               ),
@@ -128,13 +128,12 @@ class _LoginForm extends StatelessWidget {
                           Provider.of<AuthService>(context, listen: false);
                       if (!loginForm.isValidForm()) return;
                       loginForm.isLoading = true;
-                      final String? errorMessage = await authService.loginUser(
+                      final String? errorMessage = await authService.createUser(
                           loginForm.email, loginForm.password);
                       if (errorMessage == null)
                         Navigator.pushReplacementNamed(context, 'home');
                       else {
-                        NotificationsService.showSnackBar(
-                            'Datos de acceso no válidos');
+                        NotificationsService.showSnackBar('Correo ya existe');
                         loginForm.isLoading = false;
                       }
                     },

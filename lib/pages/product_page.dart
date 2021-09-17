@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:productosapp/providers/providers.dart';
 import 'package:productosapp/services/services.dart';
 import 'package:productosapp/ui/input_decorations.dart';
@@ -51,21 +50,17 @@ class _ProductPageBody extends StatelessWidget {
                 Positioned(
                     top: 50,
                     right: 10,
-                    child: IconButton(
-                      icon: Icon(
-                        Icons.camera_alt_rounded,
-                        color: Colors.white,
-                      ),
-                      onPressed: () async {
-                        final picker = new ImagePicker();
-                        final XFile? xFile = await picker.pickImage(
-                            source: ImageSource.camera, imageQuality: 100);
-                        if (xFile == null) {
-                          return;
-                        }
-                        productsService.updateSelectedProductImage(xFile.path);
-                      },
-                    ))
+                    child: ImageButton(
+                      icon: Icons.camera_alt_outlined,
+                      cameraOrGallery: true,
+                    )),
+                Positioned(
+                    bottom: 20,
+                    right: 10,
+                    child: ImageButton(
+                      icon: Icons.image_search,
+                      cameraOrGallery: false,
+                    )),
               ],
             ),
             _ProductForm(),
